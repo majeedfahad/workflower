@@ -28,7 +28,7 @@ trait StatusChecker
 
         $workflowState = static::workflow()->states()->where("name", $status)->firstOrFail();
 
-        if ($this->status == $workflowState->id) {
+        if ($this->status->state_id == $workflowState->id) {
             return true;
         }
         return false;
@@ -40,7 +40,11 @@ trait StatusChecker
 
         $workflowState = static::workflow()->states()->where("name", $status)->firstOrFail();
 
-        $this->update(['status' => $workflowState->id]);
+        $this->status()->save([
+            'model_id' => $this->id,
+            'model_type' => self::class,
+            'state_id' => $workflowState->id,
+        ]);
         return $this->refresh();
     }
 
