@@ -15,13 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('model_id');
             $table->string('model_type');
-            $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class)
-                ->constrained()
-                ->cascadeOnDelete()
-                ->cascadeOnUpdate();
+            $table->unsignedBigInteger('state_id');
             $table->timestamps();
 
             $table->index(['model_id', 'model_type']);
+            $table->foreign('state_id')->references('id')->on('workflow_states')->cascadeOnDelete()->cascadeOnUpdate();
         });
     }
 
