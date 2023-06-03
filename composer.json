@@ -1,6 +1,7 @@
 {
     "name": "majeedfahad/workflower",
     "description": "A workflow for Laravel Application",
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "Majeedfahad\\Workflower\\": "src/"
