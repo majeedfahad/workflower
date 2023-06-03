@@ -1,5 +1,6 @@
 <?php
 
+namespace Majeedfahad\Workflower\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
