@@ -1,0 +1,26 @@
+{
+    "name": "majeedfahad/workflower",
+    "description": "A workflow for Laravel Application",
+    "autoload": {
+        "psr-4": {
+            "Majeedfahad\\Workflower\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Majeed",
+            "email": "aabdulmajeed16@gmail.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^10.10",
+        "php": "^8.1"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Majeedfahad\\Workflower\\WorkflowerServiceProvider"
+            ]
+        }
+    }
+}
