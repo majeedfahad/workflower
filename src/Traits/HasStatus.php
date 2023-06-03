@@ -15,18 +15,4 @@ trait HasStatus {
     {
         return $this->morphOne(Status::class, 'model');
     }
-
-    public function getStatusAttribute()
-    {
-        return $this->status->status;
-    }
-
-    public function setStatusAttribute($status)
-    {
-        if ($this->status) {
-            $this->status->update(['status' => $status]);
-        } else {
-            $this->status()->create(['status' => $status]);
-        }
-    }
 }
