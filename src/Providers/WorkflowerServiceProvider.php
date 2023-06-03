@@ -4,7 +4,7 @@ namespace Majeedfahad\Workflower\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class WorkflowServiceProvider extends ServiceProvider
+class WorkflowerServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.

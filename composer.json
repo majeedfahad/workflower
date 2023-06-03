@@ -20,7 +20,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Majeedfahad\\Workflower\\WorkflowerServiceProvider"
+                "Majeedfahad\\Workflower\\Providers\\WorkflowerServiceProvider"
             ]
         }
     }
