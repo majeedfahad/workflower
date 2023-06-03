@@ -40,11 +40,10 @@ trait StatusChecker
 
         $workflowState = static::workflow()->states()->where("name", $status)->firstOrFail();
 
-        $this->status()->save([
-            'model_id' => $this->id,
-            'model_type' => self::class,
-            'state_id' => $workflowState->id,
-        ]);
+        $this->status()->updateOrCreate(
+            ['model_id' => $this->id,'model_type' => self::class],
+            ['state_id' => $workflowState->id]
+        );
         return $this->refresh();
     }
 
