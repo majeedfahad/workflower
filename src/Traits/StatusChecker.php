@@ -38,6 +38,10 @@ trait StatusChecker
         $status = substr($name, 3);
         $status = $this->kebab($status);
 
+        if(!static::workflow()) {
+            throw new \Exception("Workflow not found for ".self::class);
+        }
+
         $workflowState = static::workflow()->states()->where("name", $status)->firstOrFail();
 
         $this->status()->updateOrCreate(
