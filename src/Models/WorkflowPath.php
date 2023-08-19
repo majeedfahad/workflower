@@ -25,14 +25,39 @@ class WorkflowPath extends Model
         return $this->belongsTo(State::class, 'to_state_id');
     }
 
-    public static function addPath(Workflow $workflow, State $fromState, State $toState, bool $start = false, bool $end = false)
+    public static function initiate(Workflow $workflow): self
     {
-        return self::create([
-            'workflow_id' => $workflow->id,
-            'from_state_id' => $fromState->id,
-            'to_state_id' => $toState->id,
-            'start' => $start,
-            'end' => $end,
-        ]);
+        $path = new self();
+        $path->workflow()->associate($workflow);
+
+        return $path;
+    }
+
+    public function from(State $state): self
+    {
+        $this->fromState()->associate($state);
+
+        return $this;
+    }
+
+    public function to(State $state): self
+    {
+        $this->toState()->associate($state);
+
+        return $this;
+    }
+
+    public function start(): self
+    {
+        $this->start = true;
+
+        return $this;
+    }
+
+    public function end(): self
+    {
+        $this->end = true;
+
+        return $this;
     }
 }
