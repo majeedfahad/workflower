@@ -45,13 +45,19 @@ class WorkflowPath extends Model
         return $this;
     }
 
-    public function to(State|string $state): self
+    public function to(State|string|array $states): self
     {
-        if (is_string($state)) {
-            $state = $this->workflow->states()->where('name', $state)->firstOrFail();
+        if (is_string($states)) {
+            $state = $this->workflow->states()->where('name', $states)->firstOrFail();
+            $this->toState()->associate($state);
         }
 
-        $this->toState()->associate($state);
+        if (is_array($states)) {
+            $states = $this->workflow->states()->whereIn('name', $states)->get();
+            $states->each(function ($state) {
+                $this->toState()->associate($state);
+            });
+        }
 
         return $this;
     }

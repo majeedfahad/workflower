@@ -12,4 +12,9 @@ class Workflow extends Model
     {
         return $this->hasMany(State::class);
     }
+
+    public function paths(): HasMany
+    {
+        return $this->hasMany(WorkflowPath::class);
+    }
 }

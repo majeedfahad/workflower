@@ -15,4 +15,9 @@ class State extends Model
     {
         return $this->belongsTo(Workflow::class);
     }
+
+    public function nextStates()
+    {
+        return $this->belongsToMany(State::class, 'workflow_paths', 'from_state_id', 'to_state_id');
+    }
 }
