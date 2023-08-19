@@ -18,6 +18,8 @@ class State extends Model
 
     public function nextStates()
     {
-        return $this->belongsToMany(State::class, 'workflow_paths', 'from_state_id', 'to_state_id');
+        return WorkflowPath::query()->where('from_state_id', $this->id)->get()->map(function ($path) {
+            return $path->toState;
+        });
     }
 }
