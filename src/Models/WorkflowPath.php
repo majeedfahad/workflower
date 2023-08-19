@@ -3,6 +3,7 @@
 namespace Majeedfahad\Workflower\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WorkflowPath extends Model
 {
@@ -10,17 +11,17 @@ class WorkflowPath extends Model
 
     protected $guarded = [];
 
-    public function workflow()
+    public function workflow(): BelongsTo
     {
         return $this->belongsTo(Workflow::class);
     }
 
-    public function fromState()
+    public function fromState(): BelongsTo
     {
         return $this->belongsTo(State::class, 'from_state_id');
     }
 
-    public function toState()
+    public function toState(): BelongsTo
     {
         return $this->belongsTo(State::class, 'to_state_id');
     }
@@ -33,15 +34,23 @@ class WorkflowPath extends Model
         return $path;
     }
 
-    public function from(State $state): self
+    public function from(State|string $state): self
     {
+        if (is_string($state)) {
+            $state = $this->workflow->states()->where('name', $state)->firstOrFail();
+        }
+
         $this->fromState()->associate($state);
 
         return $this;
     }
 
-    public function to(State $state): self
+    public function to(State|string $state): self
     {
+        if (is_string($state)) {
+            $state = $this->workflow->states()->where('name', $state)->firstOrFail();
+        }
+
         $this->toState()->associate($state);
 
         return $this;

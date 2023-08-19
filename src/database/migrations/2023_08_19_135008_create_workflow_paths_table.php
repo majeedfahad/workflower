@@ -18,7 +18,7 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
             $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'from_state_id');
-            $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'to_state_id');
+            $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'to_state_id')->nullable();
             $table->boolean('start')->default(false);
             $table->boolean('end')->default(false);
             $table->timestamps();
