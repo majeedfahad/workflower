@@ -17,7 +17,7 @@ class State extends Model
         return $this->belongsTo(Workflow::class);
     }
 
-    public function getNextStatesAttributes(): Collection
+    public function getNextStatesAttribute(): Collection
     {
         return Transition::query()->where('from_state_id', $this->id)->get()->map(function ($path) {
             return $path->toState;
