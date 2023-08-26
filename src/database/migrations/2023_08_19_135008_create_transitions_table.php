@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workflow_paths', function (Blueprint $table) {
+        Schema::create('transitions', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(\Majeedfahad\Workflower\Models\Workflow::class)
                 ->constrained()

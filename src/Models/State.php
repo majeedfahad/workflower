@@ -18,7 +18,7 @@ class State extends Model
 
     public function nextStates()
     {
-        return WorkflowPath::query()->where('from_state_id', $this->id)->get()->map(function ($path) {
+        return Transition::query()->where('from_state_id', $this->id)->get()->map(function ($path) {
             return $path->toState;
         });
     }

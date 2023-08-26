@@ -5,9 +5,9 @@ namespace Majeedfahad\Workflower\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class WorkflowPath extends Model
+class Transition extends Model
 {
-    protected $table = 'workflow_paths';
+    protected $table = 'transitions';
 
     protected $guarded = [];
 

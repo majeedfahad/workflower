@@ -13,8 +13,8 @@ class Workflow extends Model
         return $this->hasMany(State::class);
     }
 
-    public function paths(): HasMany
+    public function transitions(): HasMany
     {
-        return $this->hasMany(WorkflowPath::class);
+        return $this->hasMany(Transition::class);
     }
 }
