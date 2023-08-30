@@ -4,6 +4,7 @@ namespace Majeedfahad\Workflower\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Majeedfahad\Workflower\Contracts\Workflowable;
 
 class Transition extends Model
 {
@@ -26,9 +27,10 @@ class Transition extends Model
         return $this->belongsTo(State::class, 'to_state_id');
     }
 
-    public static function initiate(Workflow $workflow): self
+    public static function initiate(Workflow $workflow, string $name): self
     {
         $path = new self();
+        $path->name = $name;
         $path->workflow()->associate($workflow);
 
         return $path;

@@ -4,6 +4,7 @@ namespace Majeedfahad\Workflower\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
 class State extends Model
@@ -17,10 +18,8 @@ class State extends Model
         return $this->belongsTo(Workflow::class);
     }
 
-    public function getNextStatesAttribute(): Collection
+    public function transitions(): HasMany
     {
-        return Transition::query()->where('from_state_id', $this->id)->get()->map(function ($path) {
-            return $path->toState;
-        });
+        return $this->hasMany(Transition::class, 'from_state_id');
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Status extends Model
 {
     protected $guarded = [];
+
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
