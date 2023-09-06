@@ -36,8 +36,12 @@ class Transition extends Model
         return $path;
     }
 
-    public function from(State|string $state): self
+    public function from(State|string $state = null): self
     {
+        if(is_null($state)) {
+            return $this;
+        }
+
         if (is_string($state)) {
             $state = $this->workflow->states()->where('name', $state)->firstOrFail();
         }
@@ -47,8 +51,12 @@ class Transition extends Model
         return $this;
     }
 
-    public function to(State|string $state): self
+    public function to(State|string $state = null): self
     {
+        if(is_null($state)) {
+            return $this;
+        }
+
         if (is_string($state)) {
             $state = $this->workflow->states()->where('name', $state)->firstOrFail();
         }

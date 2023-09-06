@@ -18,10 +18,9 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
             $table->string('name');
-            $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'from_state_id');
-            $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'to_state_id')->nullable();
+            $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'from_state_id')->nullable();
+            $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'to_state_id');
             $table->boolean('start')->default(false);
-            $table->boolean('end')->default(false);
             $table->timestamps();
         });
     }
@@ -31,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('states_path');
+        Schema::dropIfExists('transitions');
     }
 };
