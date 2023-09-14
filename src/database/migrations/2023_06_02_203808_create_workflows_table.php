@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('workflows', function (Blueprint $table) {
             $table->id();
+            $table->morphs('owner');
             $table->string('name');
             $table->timestamps();
         });

@@ -8,7 +8,7 @@ interface Workflowable
 {
     public function status(): MorphOne;
 
-    public function addMessage($body, $commenter);
+    public function workflowOwner();
 
 
 
