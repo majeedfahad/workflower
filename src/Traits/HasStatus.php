@@ -17,13 +17,13 @@ trait HasStatus {
         return $this->morphOne(Status::class, 'model');
     }
 
-    public function applyTransition(string $transition, callable $callback = null): void
+    public function applyTransition(string $transition): void
     {
-        \DB::transaction(function () use ($transition, $callback) {
+        \DB::transaction(function () use ($transition) {
             $transition = $this->validatedTransition($transition);
 
-            if ($callback) {
-                $callback($this);
+            if ($transition->hasBehaviours()) {
+                $transition->runBehaviours($this, $transition->name);
             }
 
             $this->status()->updateOrCreate(
@@ -37,7 +37,7 @@ trait HasStatus {
     {
         if(!$this->status) {
             return $this->workflow->transitions()->where('name', $transition)->firstOr(function () use ($transition) {
-                throw new Exception("Transition {$transition} not found on state {$this->status->state->name}");
+                throw new Exception("Transition {$transition} not found on workflow {$this->workflow->name}");
             });
         }
 

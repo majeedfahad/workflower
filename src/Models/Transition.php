@@ -4,7 +4,7 @@ namespace Majeedfahad\Workflower\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Majeedfahad\Workflower\Contracts\Workflowable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Transition extends Model
 {
@@ -27,13 +27,25 @@ class Transition extends Model
         return $this->belongsTo(State::class, 'to_state_id');
     }
 
+    public function behaviours(): BelongsToMany
+    {
+        return $this->belongsToMany(Behaviour::class);
+    }
+
     public static function initiate(Workflow $workflow, string $name): self
     {
-        $path = new self();
-        $path->name = $name;
-        $path->workflow()->associate($workflow);
+        $transition = new self();
+        $transition->name = $name;
+        $transition->workflow()->associate($workflow);
 
-        return $path;
+        return $transition;
+    }
+
+    public function setLabel(string $label)
+    {
+        $this->label = $label;
+
+        return $this;
     }
 
     public function from(State|string $state = null): self
@@ -78,5 +90,25 @@ class Transition extends Model
         $this->end = true;
 
         return $this;
+    }
+
+    public function addBehaviour(Behaviour $behaviour): self
+    {
+        $this->behaviours()->save($behaviour);
+
+        return $this;
+    }
+
+    public function hasBehaviours(): bool
+    {
+        return $this->behaviours()->exists();
+    }
+
+    public function runBehaviours($model, $transition)
+    {
+        $this->behaviours->each(function ($behaviour) use ($model, $transition) {
+            $class = $behaviour->class::getInstance();
+            $class->handle($model, $transition);
+        });
     }
 }

@@ -24,4 +24,9 @@ class Workflow extends Model
     {
         return $this->hasMany(Transition::class);
     }
+
+    public function initialTransition(): Transition
+    {
+        return $this->transitions()->where('start', true)->first();
+    }
 }

@@ -26,7 +26,7 @@ trait StatusChecker
         $status = substr($name, 2);
         $status = $this->kebab($status);
 
-        $workflowState = static::workflow()->states()->where("name", $status)->firstOrFail();
+        $workflowState = $this->workflow->states()->where("name", $status)->firstOrFail();
 
         if ($this->status->state_id == $workflowState->id) {
             return true;

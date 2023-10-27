@@ -18,6 +18,7 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
             $table->string('name');
+            $table->string('label');
             $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'from_state_id')->nullable();
             $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'to_state_id');
             $table->boolean('start')->default(false);
