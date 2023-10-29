@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workflow_states', function (Blueprint $table) {
+        Schema::create('transition_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(\Majeedfahad\Workflower\Models\Workflow::class)
+            $table->morphs('model');
+            $table->foreignIdFor(\Majeedfahad\Workflower\Models\Transition::class)
                 ->constrained()
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
-            $table->string('name');
-            $table->string('label')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->string('performer_type')->nullable();
+            $table->unsignedBigInteger('performer_id')->nullable();
+            $table->json('meta')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('workflow_states');
+        Schema::dropIfExists('transition_logs');
     }
 };

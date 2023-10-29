@@ -3,6 +3,8 @@
 namespace Majeedfahad\Workflower\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Majeedfahad\Workflower\Events\TransitionApplied;
+use Majeedfahad\Workflower\Listeners\TransitionListener;
 
 class WorkflowerServiceProvider extends ServiceProvider
 {
@@ -20,5 +22,7 @@ class WorkflowerServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        $this->app['events']->listen(TransitionApplied::class, TransitionListener::class);
     }
 }

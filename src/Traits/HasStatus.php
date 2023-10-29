@@ -3,6 +3,7 @@
 namespace Majeedfahad\Workflower\Traits;
 
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Majeedfahad\Workflower\Events\TransitionApplied;
 use Majeedfahad\Workflower\Models\Status;
 use Exception;
 use Majeedfahad\Workflower\Models\Transition;
@@ -17,9 +18,9 @@ trait HasStatus {
         return $this->morphOne(Status::class, 'model');
     }
 
-    public function applyTransition(string $transition): void
+    public function applyTransition(string $transition, ?array $meta = []): void
     {
-        \DB::transaction(function () use ($transition) {
+        \DB::transaction(function () use ($transition, $meta) {
             $transition = $this->validatedTransition($transition);
 
             if ($transition->hasBehaviours()) {
@@ -30,6 +31,8 @@ trait HasStatus {
                 ['model_id' => $this->id,'model_type' => self::class],
                 ['state_id' => $transition->toState->id]
             );
+
+            event(new TransitionApplied($transition, $this, request()->user(), $meta));
         });
     }
 
