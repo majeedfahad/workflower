@@ -25,7 +25,7 @@ trait HasStatus {
         return $this->morphMany(TransitionLog::class, 'model');
     }
 
-    public function applyTransition(string $transition, ?string $meta): void
+    public function applyTransition(string $transition, ?string $meta = null): void
     {
         \DB::transaction(function () use ($transition, $meta) {
             $transition = $this->validatedTransition($transition);
