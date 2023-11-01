@@ -25,7 +25,7 @@ class TransitionListener
             'transition_id' => $event->transition->id,
             'performer_id' => $event->performer->id ?? null,
             'performer_type' => $event->performer ? get_class($event->performer) : null,
-            'meta' => $event->meta ? json_encode($event->meta) : null,
+            'meta' => $event->meta
          ]);
     }
 }

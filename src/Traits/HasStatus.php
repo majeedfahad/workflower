@@ -2,11 +2,13 @@
 
 namespace Majeedfahad\Workflower\Traits;
 
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Majeedfahad\Workflower\Events\TransitionApplied;
 use Majeedfahad\Workflower\Models\Status;
 use Exception;
 use Majeedfahad\Workflower\Models\Transition;
+use Majeedfahad\Workflower\Models\TransitionLog;
 
 trait HasStatus {
 
@@ -18,7 +20,12 @@ trait HasStatus {
         return $this->morphOne(Status::class, 'model');
     }
 
-    public function applyTransition(string $transition, ?array $meta = []): void
+    public function transitionLogs(): MorphMany
+    {
+        return $this->morphMany(TransitionLog::class, 'model');
+    }
+
+    public function applyTransition(string $transition, ?string $meta): void
     {
         \DB::transaction(function () use ($transition, $meta) {
             $transition = $this->validatedTransition($transition);

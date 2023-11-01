@@ -18,7 +18,7 @@ class TransitionApplied
     /**
      * Create a new event instance.
      */
-    public function __construct(public Transition $transition, public $model, public $performer, public ?array $meta)
+    public function __construct(public Transition $transition, public $model, public $performer, public ?string $meta)
     {
         //
     }
