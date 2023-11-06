@@ -111,4 +111,9 @@ class Transition extends Model
             $class->handle($model, $transition);
         });
     }
+
+    public function doesntHaveFromState(): bool
+    {
+        return is_null($this->fromState);
+    }
 }
