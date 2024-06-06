@@ -45,7 +45,9 @@ trait HasStatus {
 
     private function validatedTransition(string $transition): Transition
     {
-        $t = Transition::whereName($transition)->first();
+        $t = Transition::whereName($transition)->firstOr(function () use ($transition) {
+            throw new Exception("Transition {$transition} not found on workflow {$this->workflow->name}");
+        });
 
         if(!$this->status || $this->status->state->transitions()->count() === 0 || $t->doesntHaveFromState()) {
             return $this->workflow->transitions()->where('name', $transition)->firstOr(function () use ($transition) {
