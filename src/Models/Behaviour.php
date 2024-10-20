@@ -9,6 +9,7 @@ class Behaviour extends Model
 {
     public const TYPE_FILE = 'file';
     public const TYPE_TEXT = 'text';
+    public const TYPE_SELECT = 'select';
 
     protected $table = 'behaviours';
 
