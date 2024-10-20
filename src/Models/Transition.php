@@ -99,6 +99,13 @@ class Transition extends Model
         return $this;
     }
 
+    public function removeBehaviour(Behaviour $behaviour): self
+    {
+        $this->behaviours()->detach($behaviour);
+
+        return $this;
+    }
+
     public function hasBehaviours(): bool
     {
         return $this->behaviours()->exists();
