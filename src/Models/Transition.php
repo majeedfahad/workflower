@@ -32,6 +32,11 @@ class Transition extends Model
         return $this->belongsToMany(Behaviour::class);
     }
 
+    public function getNextTransitionsAttribute()
+    {
+        return $this->toState?->transitions->map->name;
+    }
+
     public static function initiate(Workflow $workflow, string $name): self
     {
         $transition = new self();
