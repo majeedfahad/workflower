@@ -28,11 +28,18 @@ trait HasStatus {
     public function applyTransition(string $transition, ?string $meta = null): void
     {
         \DB::transaction(function () use ($transition, $meta) {
+            // Decode the json so we can combine it with the array returned from the behaviour
+            $meta = $meta != null
+                ?  json_decode($meta, true)
+                : [];
+
             $transition = $this->validatedTransition($transition);
 
             if ($transition->hasBehaviours()) {
-                $transition->runBehaviours($this, $transition->name);
+                $behaviourMeta = $transition->runBehaviours($this, $transition->name);
+                $meta = array_merge($meta, $behaviourMeta);
             }
+            $meta = json_encode($meta);
 
             $this->status()->updateOrCreate(
                 ['model_id' => $this->id,'model_type' => self::class],

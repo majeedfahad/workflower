@@ -116,12 +116,15 @@ class Transition extends Model
         return $this->behaviours()->exists();
     }
 
-    public function runBehaviours($model, $transition)
+    public function runBehaviours($model, $transition): array
     {
-        $this->behaviours->each(function ($behaviour) use ($model, $transition) {
+        $meta = [];
+        $this->behaviours->each(function ($behaviour) use ($model, $transition, &$meta) {
             $class = $behaviour->class::getInstance();
-            $class->handle($model, $transition);
+            $meta = array_merge($meta, $class->handle($model, $transition) ?? []);
         });
+
+        return $meta;
     }
 
     public function doesntHaveFromState(): bool
