@@ -10,6 +10,10 @@ class TransitionLog extends Model
 {
     protected $table = 'transition_logs';
 
+    protected $casts = [
+        'meta' => 'array',
+    ];
+
     protected $guarded = [];
 
     public function model(): MorphTo

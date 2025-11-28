@@ -2,6 +2,7 @@
 
 namespace Majeedfahad\Workflower\Traits;
 
+use Illuminate\Database\Eloquent\Model;
 use Majeedfahad\Workflower\Models\Workflow;
 use Majeedfahad\Workflower\Models\State;
 
@@ -10,7 +11,13 @@ trait HasWorkflow {
     {
         return Workflow::with('states')
             ->whereName(self::class)
-            ->where('owner_id', $this->workflowOwner())
+            ->when($this->workflowOwner(), function ($query) {
+                $query->whereMorphedTo('owner', $this->workflowOwner());
+            })
+            ->when(!$this->workflowOwner(), function ($query) {
+                $query->whereNull('owner_type')
+                      ->whereNull('owner_id');
+            })
             ->first();
     }
 
@@ -26,5 +33,10 @@ trait HasWorkflow {
     {
         return State::whereIn('workflow_id', $workflows->pluck('id'))
             ->get();
+    }
+    
+    public function workflowOwner(): ?Model
+    {
+        return null;
     }
 }

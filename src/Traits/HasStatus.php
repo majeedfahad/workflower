@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Majeedfahad\Workflower\Events\TransitionApplied;
 use Majeedfahad\Workflower\Models\Status;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Majeedfahad\Workflower\Models\Transition;
 use Majeedfahad\Workflower\Models\TransitionLog;
 
@@ -25,29 +26,25 @@ trait HasStatus {
         return $this->morphMany(TransitionLog::class, 'model');
     }
 
-    public function applyTransition(string $transition, ?string $meta = null): void
+    public function applyTransition(string $transition, array $meta = [], array $parameters = []): void
     {
-        \DB::transaction(function () use ($transition, $meta) {
-            // Decode the json so we can combine it with the array returned from the behaviour
-            $meta = $meta != null
-                ?  json_decode($meta, true)
-                : [];
+        DB::beginTransaction();
 
-            $transition = $this->validatedTransition($transition);
+        $transition = $this->validatedTransition($transition);
 
-            if ($transition->hasBehaviours()) {
-                $behaviourMeta = $transition->runBehaviours($this, $transition->name);
-                $meta = array_merge($meta, $behaviourMeta);
-            }
-            $meta = json_encode($meta);
+        if ($transition->hasBehaviours()) {
+            $behaviourMeta = $transition->runBehaviours($this, $meta, $parameters);
+            $meta = array_merge($meta, $behaviourMeta);
+        }
 
-            $this->status()->updateOrCreate(
-                ['model_id' => $this->id,'model_type' => self::class],
-                ['state_id' => $transition->toState->id]
-            );
+        $this->status()->updateOrCreate(
+            ['model_id' => $this->id,'model_type' => self::class],
+            ['state_id' => $transition->toState->id]
+        );
 
-            event(new TransitionApplied($transition, $this, request()->user(), $meta));
-        });
+        event(new TransitionApplied($transition, $this, request()->user(), $meta));
+
+        DB::commit();
     }
 
     private function validatedTransition(string $transition): Transition

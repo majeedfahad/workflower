@@ -5,6 +5,7 @@ namespace Majeedfahad\Workflower\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Majeedfahad\Workflower\Contracts\Workflowable;
 
 class Transition extends Model
 {
@@ -116,12 +117,11 @@ class Transition extends Model
         return $this->behaviours()->exists();
     }
 
-    public function runBehaviours($model, $transition): array
+    public function runBehaviours(Workflowable $workflowable, array $meta, array $parameters): array
     {
-        $meta = [];
-        $this->behaviours->each(function ($behaviour) use ($model, $transition, &$meta) {
+        $this->behaviours->each(function (Behaviour $behaviour) use ($workflowable, &$meta, $parameters) {
             $class = $behaviour->class::getInstance();
-            $meta = array_merge($meta, $class->handle($model, $transition) ?? []);
+            $meta = array_merge($meta, $class->handle($workflowable, $this, $meta, $parameters) ?? []);
         });
 
         return $meta;
@@ -130,5 +130,18 @@ class Transition extends Model
     public function doesntHaveFromState(): bool
     {
         return is_null($this->fromState);
+    }
+
+    public function getRequirements(): array
+    {
+        return $this->behaviours->reduce(function ($carry, Behaviour $behaviour) {
+            $requirements = $behaviour->parameters ?? [];
+            return array_merge($carry, $requirements);
+        }, []);
+    }
+
+    public function hasRequirements(): bool
+    {
+        return !empty($this->getRequirements());
     }
 }
