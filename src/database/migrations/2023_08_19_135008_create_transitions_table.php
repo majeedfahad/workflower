@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'from_state_id')->nullable();
             $table->foreignIdFor(\Majeedfahad\Workflower\Models\State::class, 'to_state_id');
             $table->boolean('start')->default(false);
+            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }
