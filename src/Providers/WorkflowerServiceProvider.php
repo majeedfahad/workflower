@@ -57,6 +57,9 @@ class WorkflowerServiceProvider extends ServiceProvider
 
             __DIR__.'/../../database/migrations/add_transition_id_to_permission_table.php.stub'
                 => database_path("migrations/".date('Y_m_d_His', time() + 6)."_add_transition_id_to_permission_table.php"),
+            
+            __DIR__.'/../../database/migrations/create_workflow_updates_table.php.stub'
+                => database_path("migrations/".date('Y_m_d_His', time() + 7)."_create_workflow_updates_table.php"),
         ], 'workflower-migrations');
     }
 }

@@ -63,19 +63,11 @@ class CreateWorkflowUpdate extends Command
 
         namespace $namespace;
 
-        use App\Models\Donor;
-        use App\Workflows\WorkflowFeed;
+        use Majeedfahad\Workflower\Workflows\WorkflowFeed;
         use Illuminate\Support\Facades\DB;
 
         return new class extends WorkflowFeed
         {
-            protected Donor \$donor;
-
-            public function __construct()
-            {
-                \$this->donor = Donor::whereName('')->firstOrFail();
-            }
-
             public function feed()
             {
                 DB::beginTransaction();
