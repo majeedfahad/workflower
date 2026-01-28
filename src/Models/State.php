@@ -20,6 +20,6 @@ class State extends Model
 
     public function transitions(): HasMany
     {
-        return $this->hasMany(Transition::class, 'from_state_id');
+        return $this->hasMany(Transition::class, 'from_state_id')->orderBy('order');
     }
 }
