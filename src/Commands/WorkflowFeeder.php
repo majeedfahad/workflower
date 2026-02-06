@@ -11,7 +11,7 @@ class WorkflowFeeder extends Command
      *
      * @var string
      */
-    protected $signature = 'workflow:feed {feeder}';
+    protected $signature = 'workflow:feed {feeder} {--update}';
 
     /**
      * The console command description.
@@ -37,5 +37,9 @@ class WorkflowFeeder extends Command
         $workflow = new $workflowClass();
 
         $apiKey = $workflow->feed();
+
+        if ($this->option('update')) {
+            $this->call('workflow:update', ['--workflow' => $feeder]);
+        }
     }
 }
