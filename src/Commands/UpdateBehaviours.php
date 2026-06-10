@@ -5,6 +5,7 @@ namespace Majeedfahad\Workflower\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
+use Majeedfahad\Workflower\Enums\BehaviourParamType;
 use Majeedfahad\Workflower\Models\Behaviour;
 
 class UpdateBehaviours extends Command
@@ -53,7 +54,7 @@ class UpdateBehaviours extends Command
                 [
                     'name' => $class::getName(),
                     'description' => $class::getDescription(),
-                    'parameters' => $class::getParameters(),
+                    'parameters' => $this->validatedParams($class::getParameters()),
                 ]
             );
             
@@ -68,5 +69,44 @@ class UpdateBehaviours extends Command
     public function getDirectory()
     {
         return app_path('Workflows/Behaviours');
+    }
+
+    public function validatedParams(array $params): array
+    {
+        foreach ($params as $key => $param) {
+            if (!isset($param['type']) || !($param['type'] instanceof BehaviourParamType)) {
+                throw new \InvalidArgumentException(trans('workflower::workflower.behaviour.invalid_type', ['key' => $key]));
+            }
+
+            if (!isset($param['label'])) {
+                throw new \InvalidArgumentException(trans('workflower::workflower.behaviour.missing_label', ['key' => $key]));
+            }
+
+            if(!isset($param['name'])) {
+                throw new \InvalidArgumentException(trans('workflower::workflower.behaviour.missing_name', ['key' => $key]));
+            }
+
+            if(!isset($param['required'])) {
+                $params[$key]['required'] = config('workflower.behaviour.validation.required_by_default', true);
+            }else {
+                $params[$key]['required'] = (bool) $param['required'];
+            }
+
+            if(!isset($param['rules'])) {
+                $params[$key]['rules'] = match ($params[$key]['type']) {
+                    BehaviourParamType::File => config('workflower.behaviour.validation.rules_by_type.file'),
+                    BehaviourParamType::Text => config('workflower.behaviour.validation.rules_by_type.text'),
+                    BehaviourParamType::Select => config('workflower.behaviour.validation.rules_by_type.select'),
+                    BehaviourParamType::Textarea => config('workflower.behaviour.validation.rules_by_type.textarea'),
+                    BehaviourParamType::Checkbox => config('workflower.behaviour.validation.rules_by_type.checkbox'),
+                    BehaviourParamType::Date => config('workflower.behaviour.validation.rules_by_type.date'),
+                    BehaviourParamType::Number => config('workflower.behaviour.validation.rules_by_type.number'),
+                };
+            }
+
+            $params[$key]['type'] = $param['type']->value;
+        }
+
+        return $params;
     }
 }

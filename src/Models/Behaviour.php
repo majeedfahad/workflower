@@ -5,15 +5,10 @@ namespace Majeedfahad\Workflower\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Majeedfahad\Workflower\Contracts\Workflowable;
+use Majeedfahad\Workflower\Enums\BehaviourParamType;
 
 class Behaviour extends Model
 {
-    public const TYPE_FILE = 'file';
-    public const TYPE_TEXT = 'text';
-    public const TYPE_SELECT = 'select';
-    public const TYPE_TEXTAREA = 'textarea';
-    public const TYPE_CHECKBOX = 'checkbox';
-
     protected static ?string $description = null;
     protected static array $parameters = [];
     protected static ?string $name = null;
@@ -68,5 +63,40 @@ class Behaviour extends Model
     public function handle(Workflowable $workflowable, Transition $transition, array $meta, array $parameters): ?array
     {
         return null;
+    }
+
+    public function validateParameters(array $parameters): ?array
+    {
+        $behaviourParams = $this->parameters;
+
+        if($behaviourParams === []) {
+            return [];
+        }
+
+        $rules = [];
+        $messages = [];
+        $attributes = [];
+
+        foreach ($behaviourParams as $field) {
+            $type = $field['type'] instanceof BehaviourParamType
+                ? $field['type']
+                : BehaviourParamType::from($field['type']);
+            $typeRule = $type->validationRule();
+            $rules[$field['name']] = [$field['required'] ? 'required' : 'nullable', $typeRule, ...$this->toLaravelRules($field['rules'])];
+            $attributes[$field['name']] = $field['label'];
+        }
+
+        return validator($parameters, $rules, $messages, $attributes)->validate();
+    }
+
+    protected function toLaravelRules(array $rules): array
+    {
+        $laravelRules = [];
+
+        foreach ($rules as $key => $value) {
+            $laravelRules[] = is_int($key) ? $value : "{$key}:{$value}";
+        }
+
+        return $laravelRules;
     }
 }

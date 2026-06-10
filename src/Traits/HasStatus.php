@@ -4,10 +4,10 @@ namespace Majeedfahad\Workflower\Traits;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Majeedfahad\Workflower\Events\TransitionApplied;
 use Majeedfahad\Workflower\Models\Status;
-use Exception;
-use Illuminate\Support\Facades\DB;
 use Majeedfahad\Workflower\Models\Transition;
 use Majeedfahad\Workflower\Models\TransitionLog;
 
@@ -50,19 +50,23 @@ trait HasStatus {
     private function validatedTransition(string $transition): Transition
     {
         $t = Transition::whereName($transition)->firstOr(function () use ($transition) {
-            throw new Exception("Transition {$transition} not found on workflow {$this->workflow->name}");
+            throw ValidationException::withMessages([
+                'transition' => trans('workflower::workflower.transition.not_found_on_workflow', ['transition' => $transition, 'workflow' => $this->workflow->name]),
+            ]);
         });
 
         if(!$this->status || $this->status->state->transitions()->count() === 0 || $t->doesntHaveFromState()) {
             return $this->workflow->transitions()->where('name', $transition)->firstOr(function () use ($transition) {
-                throw new Exception("Transition {$transition} not found on workflow {$this->workflow->name}");
+                throw ValidationException::withMessages([
+                    'transition' => trans('workflower::workflower.transition.not_found_on_workflow', ['transition' => $transition, 'workflow' => $this->workflow->name]),
+                ]);
             });
         }
 
-        return $this
-            ->status
-            ->state->transitions()->where('name', $transition)->firstOr(function () use ($transition) {
-            throw new Exception("Transition {$transition} not found on state {$this->status->state->name}");
+        return $this->status->state->transitions()->where('name', $transition)->firstOr(function () use ($t) {
+            throw ValidationException::withMessages([
+                'transition' => trans('workflower::workflower.transition.not_found_on_state', ['transition' => $t->label, 'state' => $this->status->state->label]),
+            ]);
         });
-    }
+        }
 }

@@ -18,6 +18,8 @@ class WorkflowerServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__.'/../../config/workflower.php', 'workflower');
+
         $this->commands([
             WorkflowFeeder::class,
             CreateWorkflowUpdate::class,
@@ -32,8 +34,6 @@ class WorkflowerServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-
         $this->app['events']->listen(TransitionApplied::class, TransitionListener::class);
 
         $this->publishes([
@@ -61,5 +61,15 @@ class WorkflowerServiceProvider extends ServiceProvider
             __DIR__.'/../../database/migrations/create_workflow_updates_table.php.stub'
                 => database_path("migrations/".date('Y_m_d_His', time() + 7)."_create_workflow_updates_table.php"),
         ], 'workflower-migrations');
+
+        $this->publishes([
+            __DIR__.'/../../config/workflower.php' => config_path('workflower.php'),
+        ], 'workflower-config');
+
+        $this->loadTranslationsFrom(__DIR__.'/../../lang', 'workflower');
+
+        $this->publishes([
+            __DIR__.'/../../lang' => lang_path('vendor/workflower'),
+        ], 'workflower-lang');
     }
 }

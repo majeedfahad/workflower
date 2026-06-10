@@ -121,10 +121,19 @@ class Transition extends Model
     {
         $this->behaviours->each(function (Behaviour $behaviour) use ($workflowable, &$meta, $parameters) {
             $class = $behaviour->class::getInstance();
-            $meta = array_merge($meta, $class->handle($workflowable, $this, $meta, $parameters) ?? []);
+            $validated = $class->validateParameters($parameters);
+            $result = $class->handle($workflowable, $this, $meta, $validated) ?? [];
+            $meta = array_merge($meta, $this->serializableMeta($result));
         });
 
         return $meta;
+    }
+
+    private function serializableMeta(array $meta): array
+    {
+        return array_filter($meta, function ($value) {
+            return is_null($value) || is_scalar($value) || (is_array($value) && $value === json_decode(json_encode($value), true));
+        });
     }
 
     public function doesntHaveFromState(): bool
