@@ -83,7 +83,7 @@ class Behaviour extends Model
                 : BehaviourParamType::from($field['type']);
             $typeRule = $type->validationRule();
             $rules[$field['name']] = [$field['required'] ? 'required' : 'nullable', $typeRule, ...$this->toLaravelRules($field['rules'])];
-            $attributes[$field['name']] = $field['label'];
+            $attributes[$field['name']] = isset($field['attribute']) && $field['attribute'] ? $field['attribute'] : $field['label'];
         }
 
         return validator($parameters, $rules, $messages, $attributes)->validate();

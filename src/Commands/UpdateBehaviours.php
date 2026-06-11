@@ -104,6 +104,10 @@ class UpdateBehaviours extends Command
                 };
             }
 
+            if(!isset($param['default'])) {
+                $params[$key]['default'] = null;
+            }
+
             $params[$key]['type'] = $param['type']->value;
         }
 
