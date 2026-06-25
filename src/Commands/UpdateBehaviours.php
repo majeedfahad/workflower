@@ -94,13 +94,14 @@ class UpdateBehaviours extends Command
 
             if(!isset($param['rules'])) {
                 $params[$key]['rules'] = match ($params[$key]['type']) {
-                    BehaviourParamType::File => config('workflower.behaviour.validation.rules_by_type.file'),
-                    BehaviourParamType::Text => config('workflower.behaviour.validation.rules_by_type.text'),
-                    BehaviourParamType::Select => config('workflower.behaviour.validation.rules_by_type.select'),
-                    BehaviourParamType::Textarea => config('workflower.behaviour.validation.rules_by_type.textarea'),
-                    BehaviourParamType::Checkbox => config('workflower.behaviour.validation.rules_by_type.checkbox'),
-                    BehaviourParamType::Date => config('workflower.behaviour.validation.rules_by_type.date'),
-                    BehaviourParamType::Number => config('workflower.behaviour.validation.rules_by_type.number'),
+                    BehaviourParamType::File            => config('workflower.behaviour.validation.rules_by_type.file'),
+                    BehaviourParamType::FileUUID        => config('workflower.behaviour.validation.rules_by_type.file_uuid'),
+                    BehaviourParamType::Text            => config('workflower.behaviour.validation.rules_by_type.text'),
+                    BehaviourParamType::Select          => config('workflower.behaviour.validation.rules_by_type.select'),
+                    BehaviourParamType::Textarea        => config('workflower.behaviour.validation.rules_by_type.textarea'),
+                    BehaviourParamType::Checkbox        => config('workflower.behaviour.validation.rules_by_type.checkbox'),
+                    BehaviourParamType::Date            => config('workflower.behaviour.validation.rules_by_type.date'),
+                    BehaviourParamType::Number          => config('workflower.behaviour.validation.rules_by_type.number'),
                 };
             }
 
