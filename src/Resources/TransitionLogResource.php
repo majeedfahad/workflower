@@ -10,6 +10,7 @@ class TransitionLogResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'transition_name' => $this->transition->name,
             'transition_label' => $this->transition->label,
             'performer_type' => $this->performer_type ? strtolower(class_basename($this->performer_type)) : null,
