@@ -64,7 +64,10 @@ return [
                     'mimes' => env('WORKFLOWER_FILE_MIMES', 'pdf,doc,docx,jpg,jpeg,png,gif,webp'),
                     'max' => (int) env('WORKFLOWER_FILE_MAX_SIZE', 8192)
                 ],
-                'file_uuid'     => [],
+                'file_uuid'     => [
+                    'mimes' => env('WORKFLOWER_FILE_MIMES', 'pdf,doc,docx,jpg,jpeg,png,gif,webp'),
+                    'max' => (int) env('WORKFLOWER_FILE_MAX_SIZE', 8192)
+                ],
                 'tel'           => ['regex' => '/^05\d{8}$/'],
             ],
         ],
