@@ -81,8 +81,17 @@ class Behaviour extends Model
             $type = $field['type'] instanceof BehaviourParamType
                 ? $field['type']
                 : BehaviourParamType::from($field['type']);
+
             $typeRule = $type->validationRule();
-            $rules[$field['name']] = [$field['required'] ? 'required' : 'nullable', $typeRule, ...$this->toLaravelRules($field['rules'])];
+
+            $customRules = $type === BehaviourParamType::FileUUID ? [] : $this->toLaravelRules($field['rules'] ?? []);
+
+            $rules[$field['name']] = [
+                $field['required'] ? 'required' : 'nullable',
+                $typeRule,
+                ...$customRules
+            ];
+
             $attributes[$field['name']] = isset($field['attribute']) && $field['attribute'] ? $field['attribute'] : $field['label'];
         }
 
