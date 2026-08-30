@@ -41,10 +41,10 @@ trait HasStatus {
             ['model_id' => $this->id,'model_type' => self::class],
             ['state_id' => $transition->toState->id]
         );
-
-        event(new TransitionApplied($transition, $this, request()->user(), $meta));
-
+        
         DB::commit();
+        
+        event(new TransitionApplied($transition, $this, request()->user(), $meta));
     }
 
     private function validatedTransition(string $transition): Transition
