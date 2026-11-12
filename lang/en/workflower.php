@@ -6,6 +6,7 @@ return [
         'invalid_type'    => "Parameter ':key' must have a valid 'type' defined in BehaviourParamType enum.",
         'missing_label'   => "Parameter ':key' must have a 'label' defined.",
         'missing_name'    => "Parameter ':key' must have a 'name' defined.",
+        'missing_fields'  => "Array parameter ':key' must have a non-empty 'fields' list.",
     ],
 
     'transition' => [
