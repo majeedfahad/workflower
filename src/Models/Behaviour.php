@@ -78,24 +78,38 @@ class Behaviour extends Model
         $attributes = [];
 
         foreach ($behaviourParams as $field) {
-            $type = $field['type'] instanceof BehaviourParamType
-                ? $field['type']
-                : BehaviourParamType::from($field['type']);
-
-            $typeRule = $type->validationRule();
-
-            $customRules = $type === BehaviourParamType::FileUUID ? [] : $this->toLaravelRules($field['rules'] ?? []);
-
-            $rules[$field['name']] = [
-                $field['required'] ? 'required' : 'nullable',
-                $typeRule,
-                ...$customRules
-            ];
-
-            $attributes[$field['name']] = isset($field['attribute']) && $field['attribute'] ? $field['attribute'] : $field['label'];
+            $this->addFieldRules($field['name'], $field, $rules, $attributes);
         }
 
         return validator($parameters, $rules, $messages, $attributes)->validate();
+    }
+
+    /**
+     * Adds the rules and the attribute label of one parameter under the given path. An array
+     * parameter also adds its child `fields` under "path.*.child", e.g. levels -> levels.*.name,
+     * so only declared child keys come back from validate().
+     */
+    protected function addFieldRules(string $path, array $field, array &$rules, array &$attributes): void
+    {
+        $type = $field['type'] instanceof BehaviourParamType
+            ? $field['type']
+            : BehaviourParamType::from($field['type']);
+
+        $customRules = $type === BehaviourParamType::FileUUID ? [] : $this->toLaravelRules($field['rules'] ?? []);
+
+        $rules[$path] = [
+            ($field['required'] ?? true) ? 'required' : 'nullable',
+            $type->validationRule(),
+            ...$customRules
+        ];
+
+        $attributes[$path] = isset($field['attribute']) && $field['attribute'] ? $field['attribute'] : $field['label'];
+
+        if ($type === BehaviourParamType::Array) {
+            foreach ($field['fields'] ?? [] as $child) {
+                $this->addFieldRules("{$path}.*.{$child['name']}", $child, $rules, $attributes);
+            }
+        }
     }
 
     protected function toLaravelRules(array $rules): array

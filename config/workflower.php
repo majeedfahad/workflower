@@ -69,6 +69,8 @@ return [
                     'max' => (int) env('WORKFLOWER_FILE_MAX_SIZE', 8192)
                 ],
                 'tel'           => ['regex' => '/^05\d{8}$/'],
+                'range'         => [],
+                'array'         => [],
             ],
         ],
     ],

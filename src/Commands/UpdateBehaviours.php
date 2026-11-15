@@ -102,11 +102,21 @@ class UpdateBehaviours extends Command
                     BehaviourParamType::Checkbox        => config('workflower.behaviour.validation.rules_by_type.checkbox'),
                     BehaviourParamType::Date            => config('workflower.behaviour.validation.rules_by_type.date'),
                     BehaviourParamType::Number          => config('workflower.behaviour.validation.rules_by_type.number'),
+                    BehaviourParamType::Range           => config('workflower.behaviour.validation.rules_by_type.range', []),
+                    BehaviourParamType::Array           => config('workflower.behaviour.validation.rules_by_type.array', []),
                 };
             }
 
             if(!isset($param['default'])) {
                 $params[$key]['default'] = null;
+            }
+
+            if ($param['type'] === BehaviourParamType::Array) {
+                if (empty($param['fields']) || !is_array($param['fields'])) {
+                    throw new \InvalidArgumentException(trans('workflower::workflower.behaviour.missing_fields', ['key' => $key]));
+                }
+
+                $params[$key]['fields'] = $this->validatedParams($param['fields']);
             }
 
             $params[$key]['type'] = $param['type']->value;
