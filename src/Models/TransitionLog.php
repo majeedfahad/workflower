@@ -23,7 +23,7 @@ class TransitionLog extends Model
 
     public function transition(): BelongsTo
     {
-        return $this->belongsTo(Transition::class);
+        return $this->belongsTo(Transition::class)->withTrashed();
     }
 
     public function performer(): MorphTo

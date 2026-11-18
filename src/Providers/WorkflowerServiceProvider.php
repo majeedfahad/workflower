@@ -60,7 +60,25 @@ class WorkflowerServiceProvider extends ServiceProvider
             
             __DIR__.'/../../database/migrations/create_workflow_updates_table.php.stub'
                 => database_path("migrations/".date('Y_m_d_His', time() + 7)."_create_workflow_updates_table.php"),
+
+            __DIR__.'/../../database/migrations/add_soft_deletes_to_transitions_table.php.stub'
+                => database_path("migrations/".date('Y_m_d_His', time() + 8)."_add_soft_deletes_to_transitions_table.php"),
+
+            __DIR__.'/../../database/migrations/create_progress_tracks_tables.php.stub'
+                => database_path("migrations/".date('Y_m_d_His', time() + 9)."_create_progress_tracks_tables.php"),
         ], 'workflower-migrations');
+
+        // Alone, for apps that already have the other tables: publishing
+        // workflower-migrations again would add them a second time.
+        $this->publishes([
+            __DIR__.'/../../database/migrations/add_soft_deletes_to_transitions_table.php.stub'
+                => database_path("migrations/".date('Y_m_d_His', time())."_add_soft_deletes_to_transitions_table.php"),
+        ], 'workflower-soft-deletes');
+
+        $this->publishes([
+            __DIR__.'/../../database/migrations/create_progress_tracks_tables.php.stub'
+                => database_path("migrations/".date('Y_m_d_His', time())."_create_progress_tracks_tables.php"),
+        ], 'workflower-progress');
 
         $this->publishes([
             __DIR__.'/../../config/workflower.php' => config_path('workflower.php'),

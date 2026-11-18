@@ -5,7 +5,6 @@ namespace Majeedfahad\Workflower\Workflows;
 use Illuminate\Database\Eloquent\Model;
 use Majeedfahad\Workflower\Contracts\Workflowable;
 use Majeedfahad\Workflower\Models\Behaviour;
-use Majeedfahad\Workflower\Models\Permission;
 use Majeedfahad\Workflower\Models\Transition;
 use Majeedfahad\Workflower\Models\Workflow;
 use Spatie\Permission\Models\Role;
@@ -45,52 +44,21 @@ abstract class WorkflowFeed
         bool $start = false,
         Behaviour|array|null $behaviour = null,
         ?Role $role = null,
-        ?array $mails = null
-    ): void
+    ): Transition
     {
         if(is_string($workflow)) {
             $workflow = Workflow::where('name', $workflow)->firstOrFail();
         }
 
-        $transition = Transition::initiate($workflow, $name)
-            ->setLabel($label)
-            ->from($state)
-            ->to($toState);
-
-        if($start) {
-            $transition->start();
-        }
-
-        $transition->save();
-
-        if(!is_array($behaviour)) {
-            $behaviour = [$behaviour];
-        }
-
-        foreach ($behaviour as $b) {
-            if ($b) {
-                $transition->addBehaviour($b);
-            }
-        }
-
-        if($role) {
-            $permission = Permission::create([
-                'name' => $name,
-                'guard_name' => $role->guard_name ?? 'web',
-            ], $transition);
-    
-            $role->givePermissionTo($permission);
-        }
-
-
-        if ($mails) {
-            if (isset($mails[$name])) {
-                $workflow->owner->mails()->create([
-                    'transition_name' => $name,
-                    ...$mails[$name]
-                ]);
-            }
-        }
+        return $workflow->path(
+            name: $name,
+            label: $label,
+            from: $state,
+            to: $toState,
+            start: $start,
+            behaviours: array_values(array_filter(is_array($behaviour) ? $behaviour : [$behaviour])),
+            roles: $role ? [$role] : null,
+        );
     }
 
 }

@@ -5,6 +5,7 @@ namespace Majeedfahad\Workflower\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Spatie\Permission\Models\Role;
 
 class Workflow extends Model
 {
@@ -23,6 +24,36 @@ class Workflow extends Model
     public function transitions(): HasMany
     {
         return $this->hasMany(Transition::class);
+    }
+
+    /**
+     * Adds a transition (always a new one: several transitions of a workflow
+     * may share a name, one per source state). See Transition::define().
+     *
+     * @param  array<int, Behaviour|class-string<Behaviour>|int>  $behaviours
+     * @param  array<int, Role>|null  $roles  null: no permission is created
+     */
+    public function path(
+        string $name,
+        string $label,
+        State|string|null $from = null,
+        State|string|null $to = null,
+        bool $start = false,
+        array $behaviours = [],
+        ?array $roles = null,
+        int $order = 0,
+        ?string $guard = null,
+    ): Transition {
+        return Transition::initiate($this, $name)->define(
+            label: $label,
+            from: $from,
+            to: $to,
+            start: $start,
+            order: $order,
+            behaviours: $behaviours,
+            roles: $roles,
+            guard: $guard,
+        );
     }
 
     public function initialTransition(): Transition

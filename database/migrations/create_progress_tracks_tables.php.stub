@@ -1,0 +1,63 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Step progress bars drawn from workflow states (see ProgressTrack).
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // One bar; without an owner it is the shared one.
+        Schema::create('progress_tracks', function (Blueprint $table) {
+            $table->id();
+            $table->nullableMorphs('owner');
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        // The workflows whose states the bar is drawn from.
+        Schema::create('progress_track_workflow', function (Blueprint $table) {
+            $table->foreignId('progress_track_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('workflow_id')->constrained()->cascadeOnDelete();
+            $table->primary(['progress_track_id', 'workflow_id']);
+        });
+
+        // The circles of the bar, in order. Each is a state, and shows its
+        // label; other states can be on the same step too.
+        Schema::create('progress_steps', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('progress_track_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('state_id')->constrained('workflow_states')->cascadeOnDelete();
+            $table->unsignedInteger('order')->default(0);
+            $table->timestamps();
+
+            $table->unique(['progress_track_id', 'state_id']);
+            $table->index(['progress_track_id', 'order']);
+        });
+
+        // What a state means on the bar: a step, between a step and the
+        // next, or hiding it. An unmapped state is ignored.
+        Schema::create('progress_track_states', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('progress_track_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('state_id')->constrained('workflow_states')->cascadeOnDelete();
+            $table->string('role');
+            $table->foreignId('progress_step_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->unique(['progress_track_id', 'state_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('progress_track_states');
+        Schema::dropIfExists('progress_steps');
+        Schema::dropIfExists('progress_track_workflow');
+        Schema::dropIfExists('progress_tracks');
+    }
+};
