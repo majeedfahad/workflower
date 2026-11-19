@@ -13,6 +13,7 @@ class StatusResource extends JsonResource
             'id' => $this->state->id,
             'name' => $this->state->name,
             'label' => $this->state->label,
+            'color' => $this->state->color?->value,
             'transitions' => $this->when(
                 $this->relationLoaded('state') && $this->state->relationLoaded('transitions'),
                 fn () => TransitionResource::collection($this->state->transitions)

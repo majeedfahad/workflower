@@ -13,6 +13,7 @@ class TransitionLogResource extends JsonResource
             'id' => $this->id,
             'transition_name' => $this->transition->name,
             'transition_label' => $this->transition->label,
+            'transition_color' => $this->transition->color?->value,
             'performer_type' => $this->performer_type ? strtolower(class_basename($this->performer_type)) : null,
             'performer' => $this->resolvePerformerName(),
             'meta' => $this->parsedMeta(),

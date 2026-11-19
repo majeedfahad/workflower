@@ -5,6 +5,7 @@ namespace Majeedfahad\Workflower\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Majeedfahad\Workflower\Enums\Color;
 use Spatie\Permission\Models\Role;
 
 class Workflow extends Model
@@ -43,6 +44,7 @@ class Workflow extends Model
         ?array $roles = null,
         int $order = 0,
         ?string $guard = null,
+        Color|string|null $color = null,
     ): Transition {
         return Transition::initiate($this, $name)->define(
             label: $label,
@@ -53,6 +55,7 @@ class Workflow extends Model
             behaviours: $behaviours,
             roles: $roles,
             guard: $guard,
+            color: $color,
         );
     }
 

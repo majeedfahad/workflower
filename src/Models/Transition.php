@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Majeedfahad\Workflower\Contracts\Workflowable;
+use Majeedfahad\Workflower\Enums\Color;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -25,6 +26,10 @@ class Transition extends Model
     protected $table = 'transitions';
 
     protected $guarded = [];
+
+    protected $casts = [
+        'color' => Color::class,
+    ];
 
     public function workflow(): BelongsTo
     {
@@ -69,6 +74,14 @@ class Transition extends Model
     public function setLabel(string $label)
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    /** Null clears it. Not saved. */
+    public function setColor(Color|string|null $color): self
+    {
+        $this->color = is_string($color) ? Color::from($color) : $color;
 
         return $this;
     }
@@ -185,9 +198,32 @@ class Transition extends Model
     }
 
     /**
+     * Exactly these roles can apply the transition: the others lose it. No
+     * role leaves it to the system. The permission is created if missing,
+     * on the roles' guard; a role on another guard than it is refused.
+     */
+    public function syncRoles(Role ...$roles): self
+    {
+        $permission = $this->ensurePermission($this->permission?->guard_name ?? $roles[0]->guard_name ?? 'web');
+
+        foreach ($roles as $role) {
+            if ($role->guard_name !== $permission->guard_name) {
+                throw new InvalidArgumentException("Role [{$role->name}] is on guard [{$role->guard_name}], the transition's permission on [{$permission->guard_name}].");
+            }
+        }
+
+        $permission->roles()->sync(array_map(fn (Role $role) => $role->getKey(), $roles));
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        return $this;
+    }
+
+    /**
      * Sets the whole transition and saves it; what is passed as null is left
      * as it is (except `from`, where null means "from any state", and is
-     * forced by a start transition, which has no source state).
+     * forced by a start transition, which has no source state). A color is
+     * cleared with setColor(null).
      *
      * @param  array<int, Behaviour|class-string<Behaviour>|int>|null  $behaviours  synced
      * @param  array<int, Role>|null  $roles  granted the permission, which is created
@@ -202,9 +238,14 @@ class Transition extends Model
         ?array $behaviours = null,
         ?array $roles = null,
         ?string $guard = null,
+        Color|string|null $color = null,
     ): self {
         if (! is_null($label)) {
             $this->setLabel($label);
+        }
+
+        if (! is_null($color)) {
+            $this->setColor($color);
         }
 
         if (! is_null($start)) {

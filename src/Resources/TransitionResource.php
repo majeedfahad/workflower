@@ -12,6 +12,7 @@ class TransitionResource extends JsonResource
         return [
             'name' => $this->name,
             'label' => $this->label,
+            'color' => $this->color?->value,
             'requirements' => $this->behaviours->mapWithKeys(fn ($behaviour) => $behaviour->parameters ?? []),
         ];
     }

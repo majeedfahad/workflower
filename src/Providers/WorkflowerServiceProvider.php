@@ -66,6 +66,9 @@ class WorkflowerServiceProvider extends ServiceProvider
 
             __DIR__.'/../../database/migrations/create_progress_tracks_tables.php.stub'
                 => database_path("migrations/".date('Y_m_d_His', time() + 9)."_create_progress_tracks_tables.php"),
+
+            __DIR__.'/../../database/migrations/add_color_to_states_and_transitions_tables.php.stub'
+                => database_path("migrations/".date('Y_m_d_His', time() + 10)."_add_color_to_states_and_transitions_tables.php"),
         ], 'workflower-migrations');
 
         // Alone, for apps that already have the other tables: publishing
@@ -79,6 +82,11 @@ class WorkflowerServiceProvider extends ServiceProvider
             __DIR__.'/../../database/migrations/create_progress_tracks_tables.php.stub'
                 => database_path("migrations/".date('Y_m_d_His', time())."_create_progress_tracks_tables.php"),
         ], 'workflower-progress');
+
+        $this->publishes([
+            __DIR__.'/../../database/migrations/add_color_to_states_and_transitions_tables.php.stub'
+                => database_path("migrations/".date('Y_m_d_His', time())."_add_color_to_states_and_transitions_tables.php"),
+        ], 'workflower-colors');
 
         $this->publishes([
             __DIR__.'/../../config/workflower.php' => config_path('workflower.php'),
