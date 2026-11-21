@@ -4,6 +4,7 @@ namespace Majeedfahad\Workflower\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -233,7 +234,7 @@ class ProgressTrack extends Model
      * states. Nulls, and records without a status, are skipped.
      *
      * @param  iterable<int, Model|null>  $records  models with a workflower status
-     * @return array{steps: array<int, array{id: int, number: int, label: string, status: string}>, between: array{label: string, after: int}|null}|null
+     * @return array{steps: array<int, array{id: int, number: int, label: string, status: string}>, between: array{label: string, after: int}|null, current: array{state_id: int, step_id: int, role: string}}|null
      */
     public function progress(iterable $records): ?array
     {
@@ -253,18 +254,21 @@ class ProgressTrack extends Model
      * state just after its step). Null when one of them hides the bar, or
      * none is mapped; unmapped states are ignored.
      *
+     * `current` is the state that put it there (of several in the same
+     * place, see settle()), the step it is on, and whether it is that step
+     * or between it and the next.
+     *
      * @param  array<int, int>  $stateIds
-     * @return array{steps: array<int, array{id: int, number: int, label: string, status: string}>, between: array{label: string, after: int}|null}|null
+     * @return array{steps: array<int, array{id: int, number: int, label: string, status: string}>, between: array{label: string, after: int}|null, current: array{state_id: int, step_id: int, role: string}}|null
      */
     public function progressOf(array $stateIds): ?array
     {
         $this->loadMissing(['steps.state', 'mappings.state']);
 
         $mappings = $this->mappings->keyBy('state_id');
-        $positions = $this->steps->pluck('id')->flip();
 
-        $current = null;
-        $rank = null;
+        // The mapped states, where each is.
+        $placed = [];
 
         foreach ($stateIds as $stateId) {
             $mapping = $mappings->get($stateId);
@@ -277,16 +281,15 @@ class ProgressTrack extends Model
                 return null;
             }
 
-            $candidate = [$positions[$mapping->progress_step_id], $mapping->role === ProgressRole::BETWEEN ? 1 : 0];
-
-            if ($rank === null || $candidate > $rank) {
-                [$current, $rank] = [$mapping, $candidate];
-            }
+            $placed[] = [$mapping, $this->rankOf((int) $stateId)];
         }
 
-        if (! $current) {
+        if ($placed === []) {
             return null;
         }
+
+        $rank = max(array_column($placed, 1));
+        $current = $this->settle(array_column(array_filter($placed, fn (array $one) => $one[1] === $rank), 0));
 
         [$position, $between] = $rank;
 
@@ -305,6 +308,108 @@ class ProgressTrack extends Model
                 'label' => $current->state->label ?: $current->state->name,
                 'after' => $position + 1,
             ] : null,
+            'current' => [
+                'state_id' => (int) $current->state_id,
+                'step_id' => (int) $current->progress_step_id,
+                'role' => $current->role->value,
+            ],
         ];
+    }
+
+    /**
+     * The transitions out of the state that move the bar forward, the
+     * furthest kind there is: to a later step; else between its step and
+     * the next (a between state is often one sent back to, so it is no
+     * forward when a later step can be reached); else to another state of
+     * the same place on the bar (a step of several states, the record
+     * moving within it); else, from a between state, back to its own step
+     * (sent back, the record is resubmitted). Those that hide the bar, go
+     * further back or leave it (to an unmapped state) never are. Empty for a
+     * state not on the bar or hiding it.
+     *
+     * Who can apply them is who the record is waiting for.
+     *
+     * @return BaseCollection<int, Transition>
+     */
+    public function forwardTransitions(State|int $state): BaseCollection
+    {
+        $stateId = $state instanceof State ? (int) $state->getKey() : $state;
+        $from = $this->rankOf($stateId);
+
+        if ($from === null) {
+            return collect();
+        }
+
+        $onBar = Transition::query()
+            ->where('from_state_id', $stateId)
+            ->where('to_state_id', '!=', $stateId)
+            ->orderBy('order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Transition $transition) => [$transition, $this->rankOf((int) $transition->to_state_id)])
+            ->filter(fn (array $pair) => $pair[1] !== null);
+
+        $kinds = [
+            fn (array $to) => $to[0] > $from[0],
+            fn (array $to) => $to[0] === $from[0] && $to[1] > $from[1],
+            fn (array $to) => $to === $from,
+            // Sent back, the way on is back to the step: resubmitting.
+            fn (array $to) => $from[1] === 1 && $to === [$from[0], 0],
+        ];
+
+        foreach ($kinds as $kind) {
+            $found = $onBar->filter(fn (array $pair) => $kind($pair[1]));
+
+            if ($found->isNotEmpty()) {
+                return $found->map(fn (array $pair) => $pair[0])->values();
+            }
+        }
+
+        return collect();
+    }
+
+    /**
+     * Of the states in the same place on the bar, the one that put it there:
+     * the one of the step's owner, the workflow its own state is of (step
+     * «completed» is the project's, «waiting for the client's signature» the
+     * contract's), the step's own state first; else the later one, records
+     * being given in the order they follow one another (a project, then its
+     * contract).
+     *
+     * @param  list<ProgressTrackState>  $tied
+     */
+    protected function settle(array $tied): ProgressTrackState
+    {
+        $step = $this->steps->firstWhere('id', $tied[0]->progress_step_id);
+        $owner = (int) $step?->state?->workflow_id;
+
+        $byOwner = array_values(array_filter($tied, fn (ProgressTrackState $one) => (int) $one->state?->workflow_id === $owner));
+        $own = array_values(array_filter($byOwner, fn (ProgressTrackState $one) => (int) $one->state_id === (int) $step?->state_id));
+
+        $pick = $own ?: $byOwner ?: $tied;
+
+        return $pick[count($pick) - 1];
+    }
+
+    /**
+     * Where a state is on the bar: [the index of its step, 1 if between it
+     * and the next else 0], to compare. Null when it hides the bar or is
+     * not mapped.
+     *
+     * @return array{0: int, 1: int}|null
+     */
+    protected function rankOf(int $stateId): ?array
+    {
+        $this->loadMissing(['steps', 'mappings']);
+
+        $mapping = $this->mappings->firstWhere('state_id', $stateId);
+
+        if (! $mapping || $mapping->role === ProgressRole::HIDDEN) {
+            return null;
+        }
+
+        $position = $this->steps->pluck('id')->search((int) $mapping->progress_step_id);
+
+        return $position === false ? null : [$position, $mapping->role === ProgressRole::BETWEEN ? 1 : 0];
     }
 }
